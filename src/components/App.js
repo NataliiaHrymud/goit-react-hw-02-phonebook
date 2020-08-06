@@ -1,80 +1,70 @@
 import React, { Component } from 'react';
+import ContactForm from './ContactForm';
+import Filter from './Filter';
+import ContactList from "./ContactList";
 import shortid from 'shortid';
-// import ContactForm from './ContactForm';
+
+const filterContacts = (contacts, filter) =>
+  contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase()),
+  );
 
 class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-    name: '',
-    number: ''
-  }
+    state = {
+      contacts: [],
+      filter: ''
+    }
+  
+  changeFilter = e => {
+    const { value } = e.target;
+    this.setState({ filter: value });
+  };
 
-  handleChange = (e) => {
-    const key = e.target.dataset.input;
-    const value = e.target.value;
-    this.setState({ [key]:value })
-  }
+  onDeleteContact = id => {
+    this.setState({
+      contacts: this.state.contacts.filter(contact => contact.id !== id),
+    });
+  };
+  
+  onSubmitData = (data) => {
+    const { contacts } = this.state;
 
-  submitData = (e) => {
-    e.preventDefault();
-    const {name, number, contacts} = this.state;
-    contacts.find(contact => contact.name.toLowerCase().includes(name.toLowerCase())) 
-    ? alert(`${name} is already in contacts!`)
-    : this.setState((prevState)=>({contacts: [...prevState.contacts, {name, number, id: shortid.generate()}], name: '', number: ''}))
-  }
-  // submitData = (e) => {
-  //   e.preventDefault();
-  //   const {name, number, contacts} = this.state;
-  //   contacts.some(contact => contact.name.toLowerCase().includes(name.toLowerCase()))===true     
-  //   ? alert(`${name} is already in contacts!`)
-  //   : this.setState((prevState)=>({contacts: [...prevState.contacts, {name, number, id: shortid.generate()}], name: '', number: ''}))
-  // }
+    const addContact = {
+      id: shortid.generate(),
+      name: data.name,
+      number: data.number,
+    };
 
-  filter = () => {
-    const {contacts, filter} = this.state;
-    return (filter) ? contacts.filter(contact => contact.name.toLowerCase().includes(filter)) : contacts
-  }
-
-  delete = (e) => {
-    const id = e.target.id;
-    this.setState((prevState) => ({contacts: [...prevState.contacts.filter(contact => contact.id !== id)]}))
-  }
+    if (contacts.find(contact => contact.name === addContact.name)) {
+      alert(`${addContact.name} is already in contacts!`);
+      return;
+    }
+    this.setState({
+      contacts: [...contacts, addContact],
+    });
+  };
 
   render () {
-    const {name, number} = this.state;
+    const { contacts, filter }= this.state;
+    const filteredContacts = filterContacts(contacts, filter);
     return (
       <>
         <h1>Phonebook</h1>
-        {/* <ContactForm onSubmit={this.submitData}/>  */}
-        <form onSubmit={this.submitData}>
-          <h2>Name</h2>
-          <input type="text" onChange={this.handleChange} name="name" data-input ="name" value={name}/>
-          <h2>Number</h2>
-          <input type="text" onChange={this.handleChange} name="number" data-input ="number" value={number}/>
-          <p></p>
-          <button type="submit"> Add new contact </button>
-        </form>
-        <h2>Contacts</h2>
-        <h3>Find contacts by name</h3>
-        <input type="text" onChange={this.handleChange} data-input ="filter"/>
-        <ul>
-          {this.filter().map(contact => (
-          <li key={contact.id}>
-            <span>{contact.name}: </span>
-            <span>{contact.number}  </span>
-            <button type="button" id={contact.id} onClick={this.delete}>Delete</button>
-          </li>))}
-        </ul>
+
+        <ContactForm onSubmitData={this.onSubmitData} /> 
+        {contacts.length !==0 && (
+          <>
+            <h2>Contacts</h2>
+            {contacts.length > 1 && (
+              <Filter value={filter} onChangeFilter={this.changeFilter} />
+            )}
+            <ContactList contacts={filteredContacts} onDeleteContact={this.onDeleteContact} />
+          </>
+        )}
+        
       </>
     );
   }
-
-}
+};
 
 export default App;

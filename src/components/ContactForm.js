@@ -5,35 +5,56 @@ class ContactForm extends Component {
     state = {
         name: '',
         number: '',
-      };
+    };
 
     handleChange = (e) => {
-        const key = e.target.dataset.input;
-        const value = e.target.value;
-        this.setState({ [key]:value })
+        const { name, value } = e.target;
+
+        this.setState({ [name]: value });
+    };
+    
+    handleSubmit = (e) => {
+        e.preventDefault();
+        if (!this.state.name || !this.state.number) {
+            return;
+          }
+        this.props.onSubmitData ({ ...this.state });
+        this.reset();
+    }
+    reset () {
+        this.setState({
+            name: '',
+            number: '',
+        });
     }
 
     render() {
+        const { name, number } = this.state;
         return (
-            <form onSubmit={this.submitData}>
+              <form onSubmit={this.handleSubmit}>
                 <h2>Name</h2>
-                <input type="text" onChange={this.handleChange} name="name" data-input ="name" value={name}/>
+                <input 
+                    type="text" 
+                    value={name}
+                    name="name"
+                    onChange={this.handleChange} 
+                />
                 <h2>Number</h2>
-                <input type="text" onChange={this.handleChange} name="number" data-input ="number" value={number}/>
+                <input 
+                    type="text" 
+                    name="number" 
+                    value={number}
+                    onChange={this.handleChange} 
+                />
                 <p></p>
                 <button type="submit"> Add new contact </button>
             </form>
-        )        
+        );        
     }
-
 }
 
-const ContactForm = ({}) => (
-    
-)
-
 ContactForm.propTypes = {
-
+    onSubmitData: PropTypes.func.isRequired,
 }
 
 export default ContactForm;
